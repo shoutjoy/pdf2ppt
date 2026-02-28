@@ -1100,7 +1100,8 @@ export default function App() {
                   ))}
                 </div>
               )}
-              {/* 편집 캔버스 - 최대 너비 제한으로 슬라이드 크기 적정화, 모바일에서 전체 너비 */}
+              {/* 편집 캔버스 - 전체 배열 모드에서는 스트립만 보이고 하단 캔버스는 숨김(첫 페이지 중복 표시 방지) */}
+              {viewMode !== 'vertical' && (
               <div className="flex items-start justify-center overflow-auto min-h-[200px] sm:min-h-[280px] flex-1 w-full">
                 <div className="w-full max-w-full flex justify-center items-start px-0 sm:px-4" style={{ transform: `scale(${editorZoom / 100})`, transformOrigin: 'top center' }}>
                   <div ref={editorContainerRef} className={`relative bg-slate-900 rounded-xl sm:rounded-[2rem] overflow-hidden shadow-2xl flex-shrink-0 w-full max-w-[min(100%,56rem)] ${viewMode === 'vertical' ? 'max-h-[50vh]' : ''}`} style={{ aspectRatio: `${slideW}/${slideH}` }}>
@@ -1220,6 +1221,7 @@ export default function App() {
               </div>
                 </div>
               </div>
+              )}
             </div>
 
             {/* Right Sidebar: 설정 - 모바일에서 하단(order-3) */}
