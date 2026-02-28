@@ -78,7 +78,22 @@ export default function App() {
   const goToPage = () => {
     const raw = (goToPageInputRef.current?.value ?? goToPageInput).trim();
     const n = parseInt(raw, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= slides.length) setCurrentSlideIdx(n - 1);
+    if (Number.isNaN(n) || n < 1 || n > slides.length) {
+      setGoToPageInput('');
+      if (goToPageInputRef.current) goToPageInputRef.current.value = '';
+      return;
+    }
+    const newIndex = n - 1; // 1-based → 0-based
+    if (newIndex === currentSlideIdx) {
+      setGoToPageInput('');
+      if (goToPageInputRef.current) goToPageInputRef.current.value = '';
+      return;
+    }
+    const next = [...slides];
+    const [moved] = next.splice(currentSlideIdx, 1);
+    next.splice(newIndex, 0, moved);
+    setSlides(next);
+    setCurrentSlideIdx(newIndex);
     setGoToPageInput('');
     if (goToPageInputRef.current) goToPageInputRef.current.value = '';
   };
@@ -1045,7 +1060,7 @@ export default function App() {
                     className="flex items-center gap-1"
                     onSubmit={(e) => { e.preventDefault(); goToPage(); }}
                   >
-                    <label className="text-[10px] font-bold text-slate-500 whitespace-nowrap">페이지로 이동</label>
+                    <label className="text-[10px] font-bold text-slate-500 whitespace-nowrap">N페이지로 끼워넣기</label>
                     <input
                       ref={goToPageInputRef}
                       type="text"
