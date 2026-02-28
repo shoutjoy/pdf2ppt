@@ -73,6 +73,15 @@ export default function App() {
   const cropImageRef = useRef(null);
 
   const editorContainerRef = useRef(null);
+  const goToPageInputRef = useRef(null);
+
+  const goToPage = () => {
+    const raw = (goToPageInputRef.current?.value ?? goToPageInput).trim();
+    const n = parseInt(raw, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= slides.length) setCurrentSlideIdx(n - 1);
+    setGoToPageInput('');
+    if (goToPageInputRef.current) goToPageInputRef.current.value = '';
+  };
 
   // Derived State: Calculate selected element early to avoid ReferenceErrors
   const selectedElement = useMemo(() => {
@@ -1034,24 +1043,23 @@ export default function App() {
                   <span className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Page {currentSlideIdx + 1} / {slides.length}</span>
                   <form
                     className="flex items-center gap-1"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const n = parseInt(goToPageInput, 10);
-                      if (!Number.isNaN(n) && n >= 1 && n <= slides.length) setCurrentSlideIdx(n - 1);
-                      setGoToPageInput('');
-                    }}
+                    onSubmit={(e) => { e.preventDefault(); goToPage(); }}
                   >
                     <label className="text-[10px] font-bold text-slate-500 whitespace-nowrap">페이지로 이동</label>
                     <input
-                      type="number"
-                      min={1}
-                      max={slides.length}
+                      ref={goToPageInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={goToPageInput}
-                      onChange={(e) => setGoToPageInput(e.target.value.replace(/[^0-9]/g, ''))}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^0-9]/g, '');
+                        setGoToPageInput(v);
+                      }}
                       placeholder="번호"
                       className="w-12 px-1.5 py-1 rounded border border-slate-200 text-[10px] font-bold text-center focus:ring-1 focus:ring-indigo-500 outline-none"
                     />
-                    <button type="submit" className="px-2 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all">이동</button>
+                    <button type="button" onClick={goToPage} className="px-2 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all">이동</button>
                   </form>
                 </div>
                   <button disabled={currentSlideIdx === slides.length - 1} onClick={() => setCurrentSlideIdx(p => p + 1)} className="p-2 hover:bg-slate-100 rounded-lg disabled:opacity-30 transition-all text-slate-500 touch-manipulation" aria-label="다음"><ChevronRight size={20}/></button>
