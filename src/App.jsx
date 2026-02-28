@@ -52,6 +52,7 @@ export default function App() {
   
   // PTI 저장/불러오기
   const [projectName, setProjectName] = useState('');
+  const [goToPageInput, setGoToPageInput] = useState('');
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [savedProjectsList, setSavedProjectsList] = useState([]);
   
@@ -1031,6 +1032,27 @@ export default function App() {
                   <button onClick={deleteCurrentSlide} disabled={slides.length <= 1} className="px-3 py-1.5 rounded-lg text-[10px] font-black transition-all bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1" title="현재 페이지 삭제"><Trash2 size={12}/> 삭제</button>
                   <button disabled={currentSlideIdx === 0} onClick={() => setCurrentSlideIdx(p => p - 1)} className="p-2 hover:bg-slate-100 rounded-lg disabled:opacity-30 transition-all text-slate-500 touch-manipulation" aria-label="이전"><ChevronLeft size={20}/></button>
                   <span className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Page {currentSlideIdx + 1} / {slides.length}</span>
+                  <form
+                    className="flex items-center gap-1"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const n = parseInt(goToPageInput, 10);
+                      if (!Number.isNaN(n) && n >= 1 && n <= slides.length) setCurrentSlideIdx(n - 1);
+                      setGoToPageInput('');
+                    }}
+                  >
+                    <label className="text-[10px] font-bold text-slate-500 whitespace-nowrap">페이지로 이동</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={slides.length}
+                      value={goToPageInput}
+                      onChange={(e) => setGoToPageInput(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="번호"
+                      className="w-12 px-1.5 py-1 rounded border border-slate-200 text-[10px] font-bold text-center focus:ring-1 focus:ring-indigo-500 outline-none"
+                    />
+                    <button type="submit" className="px-2 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-all">이동</button>
+                  </form>
                 </div>
                   <button disabled={currentSlideIdx === slides.length - 1} onClick={() => setCurrentSlideIdx(p => p + 1)} className="p-2 hover:bg-slate-100 rounded-lg disabled:opacity-30 transition-all text-slate-500 touch-manipulation" aria-label="다음"><ChevronRight size={20}/></button>
                 </div>
