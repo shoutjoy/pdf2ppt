@@ -23,8 +23,8 @@ export function saveProjectToIndexedDB(projectName, data) {
   return openDB().then((db) => {
     return new Promise((resolve, reject) => {
       const payload = {
-        id: projectName.endsWith('.pti') ? projectName : `${projectName}.pti`,
-        name: projectName.endsWith('.pti') ? projectName : `${projectName}.pti`,
+        id: /\.(his|pti)$/i.test(projectName) ? projectName : `${projectName}.his`,
+        name: /\.(his|pti)$/i.test(projectName) ? projectName : `${projectName}.his`,
         savedAt: new Date().toISOString(),
         data: { ...data, version: PTI_VERSION },
       };
