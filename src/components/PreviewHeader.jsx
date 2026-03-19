@@ -88,10 +88,6 @@ export function PreviewHeader() {
   };
 
   const handleExportVerticalImage = async () => {
-    if (uploadedFiles.length !== 1) {
-      addLog('세로 이미지는 파일이 1개일 때만 사용할 수 있습니다.');
-      return;
-    }
     if (displayedSlides.length === 0) {
       addLog('저장할 슬라이드가 없습니다.');
       return;
