@@ -70,10 +70,10 @@ export function PreviewHeader() {
     }
     try {
       setStatus('processing');
-      addLog('PDF 생성 중...');
+      addLog(`올려진 슬라이드 ${displayedSlides.length}개를 하나의 PDF로 묶는 중...`);
       await exportSlidesToPdf(displayedSlides, `Slide_Export_${Date.now()}.pdf`);
       setStatus('preview');
-      addLog('PDF 다운로드 완료.');
+      addLog(`PDF 다운로드 완료. (${displayedSlides.length}페이지 순서대로 저장)`);
     } catch (err) {
       setError(err.message);
       setStatus('error');
@@ -236,7 +236,8 @@ export function PreviewHeader() {
       <button
         type="button"
         onClick={handleExportPdf}
-        className="flex items-center gap-1 bg-emerald-600 text-white px-2 py-1 rounded-lg text-xs font-bold"
+        title="올려진 슬라이드를 순서대로 하나의 PDF 파일로 저장"
+        className="flex items-center gap-1 bg-emerald-600 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-emerald-700"
       >
         <FileDown size={12} /> PDF
       </button>

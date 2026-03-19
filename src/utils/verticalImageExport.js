@@ -5,6 +5,7 @@
 const VERTICAL_WIDTH = 1080;
 const VERTICAL_HEIGHT = 1920;
 const MAX_CANVAS_HEIGHT = 16384;
+const SLIDES_PER_CHUNK = 15;
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -35,14 +36,14 @@ export async function exportSlidesToVerticalImage(slides, baseFileName = `Vertic
   if (!slides?.length) throw new Error('저장할 슬라이드가 없습니다.');
 
   const baseName = baseFileName.replace(/\.png$/i, '');
-  const slidesPerChunk = Math.floor(MAX_CANVAS_HEIGHT / VERTICAL_HEIGHT);
-  const totalChunks = Math.ceil(slides.length / slidesPerChunk);
+  const totalChunks = Math.ceil(slides.length / SLIDES_PER_CHUNK);
+  const heightPerSlide = Math.floor(MAX_CANVAS_HEIGHT / SLIDES_PER_CHUNK);
 
   for (let chunkIdx = 0; chunkIdx < totalChunks; chunkIdx++) {
-    const start = chunkIdx * slidesPerChunk;
-    const end = Math.min(start + slidesPerChunk, slides.length);
+    const start = chunkIdx * SLIDES_PER_CHUNK;
+    const end = Math.min(start + SLIDES_PER_CHUNK, slides.length);
     const chunkSlides = slides.slice(start, end);
-    const chunkHeight = VERTICAL_HEIGHT * chunkSlides.length;
+    const chunkHeight = heightPerSlide * chunkSlides.length;
 
     const canvas = document.createElement('canvas');
     canvas.width = VERTICAL_WIDTH;
@@ -59,11 +60,11 @@ export async function exportSlidesToVerticalImage(slides, baseFileName = `Vertic
       const img = await loadImage(slide.baseImage);
       const sw = slide.width || 1000;
       const sh = slide.height || 562.5;
-      const scale = Math.min(VERTICAL_WIDTH / sw, VERTICAL_HEIGHT / sh);
+      const scale = Math.min(VERTICAL_WIDTH / sw, heightPerSlide / sh);
       const dw = sw * scale;
       const dh = sh * scale;
       const dx = (VERTICAL_WIDTH - dw) / 2;
-      const dy = i * VERTICAL_HEIGHT + (VERTICAL_HEIGHT - dh) / 2;
+      const dy = i * heightPerSlide + (heightPerSlide - dh) / 2;
       ctx.drawImage(img, 0, 0, sw, sh, dx, dy, dw, dh);
     }
 
@@ -74,7 +75,10 @@ export async function exportSlidesToVerticalImage(slides, baseFileName = `Vertic
             reject(new Error('이미지 생성 실패'));
             return;
           }
-          const fileName = totalChunks > 1 ? `${baseName}_${chunkIdx + 1}.png` : `${baseName}.png`;
+          const pageStart = start + 1;
+          const pageEnd = end;
+          const fileName =
+            totalChunks > 1 ? `${baseName}_${pageStart}-${pageEnd}.png` : `${baseName}.png`;
           downloadBlob(blob, fileName);
           resolve();
         },

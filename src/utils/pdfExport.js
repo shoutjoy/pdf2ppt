@@ -1,5 +1,7 @@
 /**
- * 슬라이드 배열을 PDF로 내보내기
+ * 올려진 슬라이드 배열을 순서대로 하나의 PDF 파일로 묶어서 내보내기
+ * @param {Array} slides - 표시 중인 슬라이드 배열 (에디터 순서 그대로)
+ * @param {string} fileName - 저장할 파일명
  */
 export async function exportSlidesToPdf(slides, fileName = `Slide_Export_${Date.now()}.pdf`) {
   const { jsPDF } = window.jspdf;
@@ -40,6 +42,7 @@ export async function exportSlidesToPdf(slides, fileName = `Slide_Export_${Date.
     const s = slides[i];
     const sw = s.width || 1000;
     const sh = s.height || 562.5;
+    if (!s.baseImage) throw new Error(`슬라이드 ${i + 1}번에 이미지가 없습니다.`);
     pdf.addImage(s.baseImage, 'PNG', 0, 0, sw, sh);
     (s.elements || []).forEach((el) => {
       if (el.type === 'shape') {

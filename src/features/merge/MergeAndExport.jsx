@@ -93,10 +93,10 @@ export function MergeAndExport() {
     }
     try {
       setStatus('processing');
-      addLog('PDF 생성 중...');
+      addLog(`올려진 슬라이드 ${displayedSlides.length}개를 하나의 PDF로 묶는 중...`);
       await exportSlidesToPdf(displayedSlides, `Slide_Export_${Date.now()}.pdf`);
       setStatus('preview');
-      addLog('PDF 다운로드 완료.');
+      addLog(`PDF 다운로드 완료. (${displayedSlides.length}페이지 순서대로 저장)`);
     } catch (err) {
       setError(err.message);
       setStatus('error');
@@ -143,6 +143,7 @@ export function MergeAndExport() {
         type="button"
         onClick={handleExportPdf}
         disabled={displayedSlides.length === 0}
+        title="올려진 슬라이드를 순서대로 하나의 PDF 파일로 저장"
         className="flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 disabled:opacity-50"
       >
         <FileDown size={18} />
