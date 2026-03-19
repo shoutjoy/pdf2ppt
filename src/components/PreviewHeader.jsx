@@ -35,6 +35,7 @@ export function PreviewHeader() {
     setSourceOrder,
     setSelectedSourceIds,
     slides,
+    uploadedFiles,
     displayedSlides,
     addLog,
     setError,
@@ -87,6 +88,10 @@ export function PreviewHeader() {
   };
 
   const handleExportVerticalImage = async () => {
+    if (uploadedFiles.length !== 1) {
+      addLog('세로 이미지는 파일이 1개일 때만 사용할 수 있습니다.');
+      return;
+    }
     if (displayedSlides.length === 0) {
       addLog('저장할 슬라이드가 없습니다.');
       return;
@@ -215,7 +220,8 @@ export function PreviewHeader() {
       <button
         type="button"
         onClick={handleExportVerticalImage}
-        className="flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-orange-600"
+        disabled={uploadedFiles.length !== 1}
+        className="flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Smartphone size={12} /> 세로이미지제작
       </button>
