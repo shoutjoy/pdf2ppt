@@ -83,7 +83,7 @@ function AppContent() {
               PDF to PPT Master <span className="text-indigo-600">{APP_VERSION}</span>
             </h1>
             <p className="text-[7px] sm:text-[8px] text-slate-400 font-bold uppercase tracking-widest hidden sm:block">
-              다중 PDF · 순서 변경 · 병합 PPTX
+              다중 PDF · 순서 변경 · 병합 PPTX: 연세대학교 인지공학 연구실 박중희 박사 shoutjoy1@yonsei.ac.kr
             </p>
           </div>
         </div>
