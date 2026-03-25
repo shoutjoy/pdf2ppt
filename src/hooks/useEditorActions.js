@@ -113,15 +113,15 @@ export function useEditorActions() {
     () =>
       addElement('text', {
         content: '텍스트 입력',
-        fontSize: 24,
+        fontSize: 42,
         fontFamily: 'Malgun Gothic',
-        color: '#000000',
-        isBold: false,
+        color: '#1a1a1a',
+        isBold: true,
         isItalic: false,
         isUnderline: false,
         bgColor: 'transparent',
-        w: 420,
-        h: 56,
+        w: 520,
+        h: 100,
       }),
     [addElement]
   );
@@ -135,6 +135,7 @@ export function useEditorActions() {
         bgColor: '#ffffff',
         borderColor: '#000000',
         borderWidth: 2,
+        borderLineStyle: 'solid',
       }),
     [addElement]
   );
@@ -181,6 +182,7 @@ export function useEditorActions() {
         bgColor: 'transparent',
         borderColor: '#000000',
         borderWidth: 2,
+        borderLineStyle: 'solid',
         arrowDirection: dir,
         arrowLineColor: '#000000',
         arrowHeadColor: '#000000',

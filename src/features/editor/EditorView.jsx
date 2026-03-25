@@ -28,6 +28,7 @@ import { SlideMoveToTarget } from '../slideOrder/SlideMoveToTarget';
 import { LogPanel } from '../../components/LogPanel';
 import { SourceSidebar } from '../../components/SourceSidebar';
 import { FONT_FAMILIES } from '../../constants';
+import { SHAPE_BORDER_LINE_OPTIONS, svgStrokeDashArray } from '../../utils/shapeLineStyle';
 import { ReferenceImageUpload, CropModal, useCrop } from 'ImageCROP';
 
 export function EditorView() {
@@ -431,7 +432,10 @@ export function EditorView() {
             >
               <div
                 className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-                style={{ backgroundImage: curSlide?.baseImage ? `url(${curSlide.baseImage})` : undefined }}
+                style={{
+                  containerType: 'inline-size',
+                  backgroundImage: curSlide?.baseImage ? `url(${curSlide.baseImage})` : undefined,
+                }}
                 onClick={() => setSelectedElementId(null)}
               >
                 {(curSlide?.elements || []).map((el) => {
@@ -481,7 +485,7 @@ export function EditorView() {
                       {el.type === 'text' && (
                         <div
                           style={{
-                            fontSize: `${el.fontSize || 24}px`,
+                            fontSize: `clamp(11px, ${((el.fontSize || 24) / slideW) * 100}cqw, 320px)`,
                             fontWeight: el.isBold ? 'bold' : 'normal',
                             fontStyle: el.isItalic ? 'italic' : 'normal',
                             color: el.color || '#000',
@@ -565,6 +569,7 @@ export function EditorView() {
                                 stroke={lineCol}
                                 strokeWidth={sw}
                                 strokeLinecap="round"
+                                strokeDasharray={svgStrokeDashArray(el.borderLineStyle)}
                                 markerEnd={`url(#arrow-cap-${el.id})`}
                               />
                             </svg>
@@ -583,22 +588,46 @@ export function EditorView() {
                             stroke={el.borderColor || '#000000'}
                             strokeWidth={Math.max(1, (el.borderWidth || 2) * 2)}
                             strokeLinejoin="round"
+                            strokeDasharray={svgStrokeDashArray(el.borderLineStyle)}
                           />
                         </svg>
                       )}
                       {el.type === 'shape' &&
                         el.shapeType !== 'arrowLine' &&
                         el.shapeType !== 'triangle' && (
-                          <div
-                            className="pointer-events-none w-full h-full"
-                            style={{
-                              backgroundColor:
-                                el.bgColor === 'transparent' ? 'transparent' : el.bgColor || '#fff',
-                              border: `${el.borderWidth || 2}px solid ${el.borderColor || '#000'}`,
-                              borderRadius:
-                                el.shapeType === 'circle' ? '50%' : el.shapeType === 'roundedRect' ? '12%' : 0,
-                            }}
-                          />
+                          <svg
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            className="pointer-events-none w-full h-full shrink-0"
+                          >
+                            {(() => {
+                              const bw = el.borderWidth ?? 2;
+                              const strokeW = bw > 0 ? Math.max(0.5, bw * 2) : 0;
+                              const strokeCol = el.borderColor || '#000000';
+                              const fill =
+                                el.bgColor === 'transparent' ? 'none' : el.bgColor || '#ffffff';
+                              const dash = svgStrokeDashArray(el.borderLineStyle);
+                              const common = {
+                                fill,
+                                stroke: bw > 0 ? strokeCol : 'none',
+                                strokeWidth: strokeW,
+                                strokeDasharray: dash,
+                                strokeLinejoin: 'round',
+                                strokeLinecap: 'round',
+                              };
+                              if (el.shapeType === 'circle') {
+                                return (
+                                  <ellipse cx="50" cy="50" rx="50" ry="50" {...common} />
+                                );
+                              }
+                              if (el.shapeType === 'roundedRect') {
+                                return (
+                                  <rect x="0" y="0" width="100" height="100" rx="12" ry="12" {...common} />
+                                );
+                              }
+                              return <rect x="0" y="0" width="100" height="100" {...common} />;
+                            })()}
+                          </svg>
                         )}
                       </div>
                       {isSel && (
@@ -867,6 +896,71 @@ export function EditorView() {
                       +
                     </button>
                   </div>
+                  <label className="block text-xs font-bold text-slate-500 mt-2">굵게</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateCurrentSlideElements((els) =>
+                        els.map((it) =>
+                          it.id === selectedElementId ? { ...it, isBold: !it.isBold } : it
+                        )
+                      );
+                    }}
+                    className={`w-full py-2.5 rounded-lg text-sm font-black border-2 transition-colors ${
+                      selectedElement.isBold
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                    }`}
+                  >
+                    B 굵게
+                  </button>
+                  <label className="block text-xs font-bold text-slate-500 mt-2">글자 색</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      aria-label="글자 색"
+                      className="h-10 w-full max-w-[120px] rounded-lg border border-slate-200 cursor-pointer p-1 bg-white"
+                      value={
+                        /^#[0-9A-Fa-f]{6}$/.test(String(selectedElement.color || '#000000').trim())
+                          ? String(selectedElement.color || '#000000').trim()
+                          : '#000000'
+                      }
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        updateCurrentSlideElements((els) =>
+                          els.map((it) =>
+                            it.id === selectedElementId ? { ...it, color: v } : it
+                          )
+                        );
+                      }}
+                    />
+                    <span className="text-[10px] text-slate-400 truncate" title={selectedElement.color || '#000000'}>
+                      {selectedElement.color || '#000000'}
+                    </span>
+                  </div>
+                </>
+              )}
+              {selectedElement.type === 'shape' && (
+                <>
+                  <label className="block text-xs font-bold text-slate-500">선 종류</label>
+                  <select
+                    value={selectedElement.borderLineStyle || 'solid'}
+                    onChange={(e) => {
+                      const borderLineStyle = e.target.value;
+                      updateCurrentSlideElements((els) =>
+                        els.map((it) =>
+                          it.id === selectedElementId ? { ...it, borderLineStyle } : it
+                        )
+                      );
+                    }}
+                    className="w-full p-2 border rounded-lg text-sm"
+                  >
+                    {SHAPE_BORDER_LINE_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
                 </>
               )}
               {selectedElement.type === 'shape' && selectedElement.shapeType === 'arrowLine' && (
@@ -1006,20 +1100,39 @@ export function EditorView() {
                     }}
                   />
                   <label className="block text-xs font-bold text-slate-500">배경색</label>
-                  <input
-                    type="color"
-                    className="w-full h-9 border rounded cursor-pointer"
-                    value={
-                      selectedElement.bgColor === 'transparent' || !selectedElement.bgColor?.startsWith('#')
-                        ? '#ffffff'
-                        : selectedElement.bgColor
-                    }
-                    onChange={(e) => {
-                      updateCurrentSlideElements((els) =>
-                        els.map((it) => (it.id === selectedElementId ? { ...it, bgColor: e.target.value } : it))
-                      );
-                    }}
-                  />
+                  <div className="flex gap-2 items-stretch">
+                    <input
+                      type="color"
+                      className="flex-1 min-w-0 h-9 border rounded cursor-pointer"
+                      value={
+                        selectedElement.bgColor === 'transparent' || !selectedElement.bgColor?.startsWith('#')
+                          ? '#ffffff'
+                          : selectedElement.bgColor
+                      }
+                      onChange={(e) => {
+                        updateCurrentSlideElements((els) =>
+                          els.map((it) => (it.id === selectedElementId ? { ...it, bgColor: e.target.value } : it))
+                        );
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateCurrentSlideElements((els) =>
+                          els.map((it) =>
+                            it.id === selectedElementId ? { ...it, bgColor: 'transparent' } : it
+                          )
+                        );
+                      }}
+                      className={`shrink-0 px-3 rounded-lg text-xs font-bold border transition-colors ${
+                        selectedElement.bgColor === 'transparent'
+                          ? 'bg-indigo-100 text-indigo-800 border-indigo-400 ring-2 ring-indigo-300'
+                          : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                      }`}
+                    >
+                      투명
+                    </button>
+                  </div>
                   <label className="block text-xs font-bold text-slate-500">테두리 색</label>
                   <input
                     type="color"

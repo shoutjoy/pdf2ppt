@@ -3,6 +3,8 @@
  * @param {Array} slides - 표시 중인 슬라이드 배열 (에디터 순서 그대로)
  * @param {string} fileName - 저장할 파일명
  */
+import { pdfApplyLineDash } from './shapeLineStyle';
+
 export async function exportSlidesToPdf(slides, fileName = `Slide_Export_${Date.now()}.pdf`) {
   const { jsPDF } = window.jspdf;
   if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다.');
@@ -46,21 +48,51 @@ export async function exportSlidesToPdf(slides, fileName = `Slide_Export_${Date.
     pdf.addImage(s.baseImage, 'PNG', 0, 0, sw, sh);
     (s.elements || []).forEach((el) => {
       if (el.type === 'shape') {
-        setFill(el);
-        setStroke(el);
         const x = el.x;
         const y = el.y;
         const w = el.w;
         const h = el.h;
+        const bw = Math.max(0, Number(el.borderWidth) || 0);
+        const lineStyle = el.borderLineStyle || 'solid';
+        const hasFill = el.bgColor !== 'transparent' && el.bgColor;
         if (el.shapeType === 'circle') {
           const r = Math.min(w, h) / 2;
+          const cx = x + w / 2;
+          const cy = y + h / 2;
           try {
-            pdf.ellipse(x + w / 2, y + h / 2, r, r, 'FD');
+            if (hasFill) {
+              setFill(el);
+              pdf.ellipse(cx, cy, r, r, 'F');
+            }
+            if (bw > 0) {
+              setStroke(el);
+              pdfApplyLineDash(pdf, lineStyle, bw);
+              pdf.ellipse(cx, cy, r, r, 'S');
+              if (typeof pdf.setLineDashPattern === 'function') pdf.setLineDashPattern([], 0);
+            }
           } catch (_) {
-            pdf.rect(x, y, w, h, 'FD');
+            if (hasFill) {
+              setFill(el);
+              pdf.rect(x, y, w, h, 'F');
+            }
+            if (bw > 0) {
+              setStroke(el);
+              pdfApplyLineDash(pdf, lineStyle, bw);
+              pdf.rect(x, y, w, h, 'S');
+              if (typeof pdf.setLineDashPattern === 'function') pdf.setLineDashPattern([], 0);
+            }
           }
         } else {
-          pdf.rect(x, y, w, h, 'FD');
+          if (hasFill) {
+            setFill(el);
+            pdf.rect(x, y, w, h, 'F');
+          }
+          if (bw > 0) {
+            setStroke(el);
+            pdfApplyLineDash(pdf, lineStyle, bw);
+            pdf.rect(x, y, w, h, 'S');
+            if (typeof pdf.setLineDashPattern === 'function') pdf.setLineDashPattern([], 0);
+          }
         }
       }
       if (el.type === 'text' && el.bgColor !== 'transparent' && el.bgColor) {

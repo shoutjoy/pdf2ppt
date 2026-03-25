@@ -1,6 +1,8 @@
 /**
  * 슬라이드 배열을 PPTX로 내보내기
  */
+import { pptxDashType } from './shapeLineStyle';
+
 export async function exportSlidesToPptx(slides, fileName = `Slide_Master_${Date.now()}.pptx`) {
   const PptxGenJS = window.PptxGenJS;
   if (!PptxGenJS) throw new Error('PptxGenJS가 로드되지 않았습니다.');
@@ -46,11 +48,13 @@ export async function exportSlidesToPptx(slides, fileName = `Slide_Master_${Date
         slide.addImage({ data: el.src, ...opts });
       } else if (el.type === 'shape') {
         const fill = { color: hex(el.bgColor || '#ffffff') };
+        const dt = pptxDashType(el.borderLineStyle);
         const line =
           el.borderColor && (el.borderWidth || 0) > 0
             ? {
                 color: hex(el.borderColor),
                 pt: Math.min(5, el.borderWidth || 2),
+                ...(dt ? { dashType: dt } : {}),
               }
             : null;
         let st = pptx.ShapeType.rect;
