@@ -35,7 +35,6 @@ export function PreviewHeader() {
     setSourceOrder,
     setSelectedSourceIds,
     slides,
-    uploadedFiles,
     displayedSlides,
     addLog,
     setError,
@@ -216,7 +215,7 @@ export function PreviewHeader() {
       <button
         type="button"
         onClick={handleExportVerticalImage}
-        disabled={uploadedFiles.length !== 1}
+        disabled={displayedSlides.length === 0}
         className="flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Smartphone size={12} /> 세로이미지제작

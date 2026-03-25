@@ -30,6 +30,8 @@ export function AppProvider({ children }) {
   const [imageCropSrc, setImageCropSrc] = useState(null);
   const [cropSelection, setCropSelection] = useState({ x: 0, y: 0, w: 1, h: 1 });
   const [imageCropNatural, setImageCropNatural] = useState({ w: 0, h: 0 });
+  /** 참고 이미지 업로드 → 크롭 완료 후 data URL (병합/내보내기 등에서 활용 가능) */
+  const [referenceImageDataUrl, setReferenceImageDataUrl] = useState(null);
 
   const addLog = useCallback((message) => {
     const msgString =
@@ -131,6 +133,8 @@ export function AppProvider({ children }) {
     setCropSelection,
     imageCropNatural,
     setImageCropNatural,
+    referenceImageDataUrl,
+    setReferenceImageDataUrl,
     sourceOrder,
     setSourceOrder,
     selectedSourceIds,

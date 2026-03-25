@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 
 export function useEditorActions() {
   const {
+    slides,
     displayedSlides,
     setSlides,
     currentSlideIdx,
@@ -12,15 +13,30 @@ export function useEditorActions() {
     addLog,
   } = useApp();
 
+  /** 현재 화면 슬라이드가 slides 배열의 몇 번째인지 (객체 참조 갱신 후에도 안정적으로 갱신) */
+  const slideIndexInSlides = useMemo(() => {
+    const t = displayedSlides[currentSlideIdx];
+    if (!t) return -1;
+    return slides.findIndex((s) => s === t);
+  }, [slides, displayedSlides, currentSlideIdx]);
+
   const updateCurrentSlideElements = useCallback(
-    (newElements) => {
-      const targetSlide = displayedSlides[currentSlideIdx];
-      if (!targetSlide) return;
-      setSlides((prev) =>
-        prev.map((s) => (s === targetSlide ? { ...s, elements: newElements } : s))
-      );
+    (newElementsOrUpdater) => {
+      setSlides((prev) => {
+        const idx = slideIndexInSlides;
+        if (idx < 0 || idx >= prev.length) return prev;
+        const slideNow = prev[idx];
+        const oldElements = slideNow.elements || [];
+        const newElements =
+          typeof newElementsOrUpdater === 'function'
+            ? newElementsOrUpdater(oldElements)
+            : newElementsOrUpdater;
+        const next = [...prev];
+        next[idx] = { ...slideNow, elements: newElements };
+        return next;
+      });
     },
-    [currentSlideIdx, displayedSlides, setSlides]
+    [slideIndexInSlides, setSlides]
   );
 
   const insertBlankSlideAfter = useCallback(
@@ -74,7 +90,7 @@ export function useEditorActions() {
   const addElement = useCallback(
     (type, extra = {}) => {
       const newElement = {
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         type,
         x: 100,
         y: 100,
@@ -82,6 +98,8 @@ export function useEditorActions() {
         h: 100,
         color: '#000000',
         bgColor: '#ffffff',
+        rotation: 0,
+        opacity: 1,
         ...extra,
       };
       const currentElements = displayedSlides[currentSlideIdx]?.elements || [];
@@ -102,6 +120,8 @@ export function useEditorActions() {
         isItalic: false,
         isUnderline: false,
         bgColor: 'transparent',
+        w: 420,
+        h: 56,
       }),
     [addElement]
   );
@@ -115,7 +135,6 @@ export function useEditorActions() {
         bgColor: '#ffffff',
         borderColor: '#000000',
         borderWidth: 2,
-        rotation: 0,
       }),
     [addElement]
   );
@@ -163,7 +182,14 @@ export function useEditorActions() {
         borderColor: '#000000',
         borderWidth: 2,
         arrowDirection: dir,
-        rotation: 0,
+        arrowLineColor: '#000000',
+        arrowHeadColor: '#000000',
+        /** viewBox(0~100) 기준 선 길이 (가로 화살표 기준) */
+        arrowLineSpan: 66,
+        /** 선 두께 (SVG user units) */
+        arrowStrokeWidth: 5,
+        /** 화살촉 크기 (픽셀에 가까운 마커 크기) */
+        arrowHeadSize: 10,
       }),
     saveVersion,
     loadVersion,
