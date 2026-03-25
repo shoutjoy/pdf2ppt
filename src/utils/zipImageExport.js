@@ -3,9 +3,6 @@
  */
 import JSZip from 'jszip';
 
-const VERTICAL_WIDTH = 1080;
-const VERTICAL_HEIGHT = 1920;
-
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -42,24 +39,18 @@ export async function exportSlidesToZipImage(slides, baseFileName = `Images_${Da
     const slide = slides[i];
     if (!slide?.baseImage) continue;
 
+    const img = await loadImage(slide.baseImage);
+    const sw = Math.max(1, Math.round(img.naturalWidth || slide.width || 1000));
+    const sh = Math.max(1, Math.round(img.naturalHeight || slide.height || 562.5));
+
+    // ZIP 이미지는 각 슬라이드를 원본 가로 비율 그대로 저장한다.
     const canvas = document.createElement('canvas');
-    canvas.width = VERTICAL_WIDTH;
-    canvas.height = VERTICAL_HEIGHT;
+    canvas.width = sw;
+    canvas.height = sh;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('캔버스를 사용할 수 없습니다.');
 
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, VERTICAL_WIDTH, VERTICAL_HEIGHT);
-
-    const img = await loadImage(slide.baseImage);
-    const sw = slide.width || 1000;
-    const sh = slide.height || 562.5;
-    const scale = Math.min(VERTICAL_WIDTH / sw, VERTICAL_HEIGHT / sh);
-    const dw = sw * scale;
-    const dh = sh * scale;
-    const dx = (VERTICAL_WIDTH - dw) / 2;
-    const dy = (VERTICAL_HEIGHT - dh) / 2;
-    ctx.drawImage(img, 0, 0, sw, sh, dx, dy, dw, dh);
+    ctx.drawImage(img, 0, 0, sw, sh);
 
     const blob = await canvasToBlob(canvas);
     const num = String(i + 1).padStart(3, '0');
